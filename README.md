@@ -12,7 +12,10 @@ The scripts follow Slackware’s philosophy and standards, allowing local packag
 
 ## Available Packages
 
-In this repository you will find the following software and packages for Slackware 15.0 and Slackware Current:
+In this repository you will find the following software and packages for **Slackware 15.0** and/or **Slackware Current**:
 
 - **grafana** — [https://grafana.com/](https://grafana.com/)
 - **nchat** — [https://github.com/d99kris/nchat/](https://github.com/d99kris/nchat/)
+- **RemoteDesktopManager** — [https://devolutions.net](https://devolutions.net)
+- **teleport-connect** — [https://goteleport.com/](https://goteleport.com/)
+
