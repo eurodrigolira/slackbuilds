@@ -2,7 +2,7 @@
 
 # Slackware build script for nchat
 
-# Copyright 2024 Rodrigo Lira <eurodrigolira@gmail.com>
+# Copyright 2026 Rodrigo Lira <eurodrigolira@gmail.com>
 #
 # All rights reserved.
 #
@@ -25,8 +25,8 @@
 
 cd $(dirname $0) ; CWD=$(pwd)
 
-PRGNAM=nchat
-VERSION=${VERSION:-5.13.17}
+PRGNAM=sniffnet
+VERSION=${VERSION:-1.4.2}
 BUILD=${BUILD:-1}
 TAG=${TAG:-_SBo}
 PKGTYPE=${PKGTYPE:-tgz}
@@ -64,25 +64,28 @@ find -L . \
  \( -perm 666 -o -perm 664 -o -perm 640 -o -perm 600 -o -perm 444 \
   -o -perm 440 -o -perm 400 \) -exec chmod 644 {} \;
 
-mkdir -p build && cd build && cmake .. && make -s
+cargo build
 
 find $PKG | xargs file | grep -e "executable" -e "shared object" | grep ELF \
   | cut -f 1 -d : | xargs strip --strip-unneeded 2> /dev/null || true
 
 mkdir -p $PKG/usr/bin
-cp -a bin/nchat $PKG/usr/bin
+cp -a  target/debug/$PRGNAM /usr/bin
 
-mkdir -p $PKG/usr/lib64
-cp -a lib/*.so $PKG/usr/lib64
+mkdir -p $PKG/usr/share/applications
+cp resources/packaging/linux/$PRGNAM.desktop $PKG/usr/share/applications/$PRGNAM.desktop
 
-mkdir -p $PKG/usr/share/$PRGNAM
-cp -a share/$PRGNAM/themes $PKG/usr/share/$PRGNAM
+for icon in `ls resources/packaging/linux/graphics | awk -F'[_.x]' '{print $(NF-1)}'`; do
+   install -Dm644 "resources/packaging/linux/graphics/sniffnet_${icon}x${icon}.png" \
+   "$PKG/usr/share/icons/hicolor/${icon}x${icon}/apps/$PRGNAM.png"
+done
 
 mkdir -p $PKG/usr/doc/$PRGNAM-$VERSION
 cat $CWD/$PRGNAM.SlackBuild > $PKG/usr/doc/$PRGNAM-$VERSION/$PRGNAM.SlackBuild
 
 mkdir -p $PKG/install
 cat $CWD/slack-desc > $PKG/install/slack-desc
+cat $CWD/doinst.sh > $PKG/install/doinst.sh
 
 cd $PKG
 /sbin/makepkg -l y -c n $OUTPUT/$PRGNAM-$VERSION-$ARCH-$BUILD$TAG.$PKGTYPE

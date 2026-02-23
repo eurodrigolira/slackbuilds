@@ -13,10 +13,11 @@ The scripts follow Slackware’s philosophy and standards, allowing local packag
 
 In this repository you will find the following software and packages for **Slackware 15.0** and/or **Slackware Current**:
 
+- **RemoteDesktopManager** — [https://devolutions.net](https://devolutions.net)
 - **freeplane** — [https://docs.freeplane.org/](https://docs.freeplane.org/)
 - **grafana** — [https://grafana.com/](https://grafana.com/)
 - **nchat** — [https://github.com/d99kris/nchat/](https://github.com/d99kris/nchat/)
-- **RemoteDesktopManager** — [https://devolutions.net](https://devolutions.net)
 - **rustdesk** — [https://rustdesk.com/](https://rustdesk.com/)
+- **sniffnet** — [https://sniffnet.net/](https://sniffnet.net/)
 - **teleport-connect** — [https://goteleport.com/](https://goteleport.com/)
 - **tgpt** — [https://github.com/aandrew-me/tgpt](https://github.com/aandrew-me/tgpt)
