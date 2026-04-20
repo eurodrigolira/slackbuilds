@@ -1,8 +1,8 @@
 #!/bin/bash
 
-# Slackware build script for nchat
+# Slackware build script for caddy
 
-# Copyright 2024 Rodrigo Lira <eurodrigolira@gmail.com>
+# Copyright 2026 Rodrigo Lira <eurodrigolira@gmail.com>
 #
 # All rights reserved.
 #
@@ -25,11 +25,24 @@
 
 cd $(dirname $0) ; CWD=$(pwd)
 
-PRGNAM=nchat
-VERSION=${VERSION:-5.14.44}
+PRGNAM=caddy
+VERSION=${VERSION:-2.11.2}
 BUILD=${BUILD:-1}
 TAG=${TAG:-_SBo}
 PKGTYPE=${PKGTYPE:-tgz}
+DIST=dist
+
+CADDYUSER=${CADDYUSER:-caddy}
+CADDYGROUP=${CADDYGROUP:-caddy}
+CADDYUID=${CADDYUID:-398}
+CADDYGID=${CADDYGID:-398}
+
+if [ "$(grep ^$CADDYUSER: /etc/passwd)" = "" -o "$(grep ^$CADDYGROUP: /etc/group)" = "" ] ; then
+    echo "  You must have a \"$CADDYGROUP\" group and user to run this script."
+    echo "# groupadd --system -g $CADDYGID $CADDYGROUP"
+    echo "# useradd --system -u $CADDYUID -g $CADDYGROUP -d /dev/null -s /bin/false $CADDYUSER"
+    exit 1
+fi
 
 if [ -z "$ARCH" ]; then
   ARCH=$( uname -m )
@@ -56,6 +69,8 @@ mkdir -p $TMP $PKG $OUTPUT
 cd $TMP
 rm -rf $PRGNAM-$VERSION
 tar xvf $CWD/$PRGNAM-$VERSION.tar.gz
+tar xvf $CWD/$DIST-$VERSION.tar.gz
+
 cd $PRGNAM-$VERSION
 chown -R root:root .
 find -L . \
@@ -64,25 +79,43 @@ find -L . \
  \( -perm 666 -o -perm 664 -o -perm 640 -o -perm 600 -o -perm 444 \
   -o -perm 440 -o -perm 400 \) -exec chmod 644 {} \;
 
-mkdir -p build && cd build && cmake .. && make -s
+cd cmd/caddy/
+go build
 
-find $PKG | xargs file | grep -e "executable" -e "shared object" | grep ELF \
-  | cut -f 1 -d : | xargs strip --strip-unneeded 2> /dev/null || true
+mkdir -p $PKG/var/lib/$PRGNAM
+chown -R $CADDYUSER:$CADDYGROUP $PKG/var/lib/$PRGNAM
 
-mkdir -p $PKG/usr/bin
-cp -a bin/nchat $PKG/usr/bin
+mkdir -p $PKG/usr/sbin
+cp -a $PRGNAM $PKG/usr/sbin
+strip --strip-unneeded $PKG/usr/sbin/$PRGNAM
 
-mkdir -p $PKG/usr/lib64
-cp -a lib/*.so $PKG/usr/lib64
+mkdir -p $PKG/var/log/$PRGNAM
+chown -R $CADDYUSER:$CADDYGROUP $PKG/var/log/$PRGNAM
 
+mkdir -p $PKG/etc/$PRGNAM
 mkdir -p $PKG/usr/share/$PRGNAM
-cp -a share/$PRGNAM/themes $PKG/usr/share/$PRGNAM
 
 mkdir -p $PKG/usr/doc/$PRGNAM-$VERSION
+cd $TMP/$PRGNAM-$VERSION
+cp -a LICENSE AUTHORS README.md $PKG/usr/doc/$PRGNAM-$VERSION
 cat $CWD/$PRGNAM.SlackBuild > $PKG/usr/doc/$PRGNAM-$VERSION/$PRGNAM.SlackBuild
+cat $CWD/README.SLACKWARE > $PKG/usr/doc/$PRGNAM-$VERSION/README.SLACKWARE
+
+cd $TMP/$DIST-$VERSION
+ls
+cp -a config/Caddyfile $PKG/etc/$PRGNAM
+cp -a scripts/completions/generate.sh $PKG/usr/doc/$PRGNAM-$VERSION
+cp -a welcome/index.html $PKG/usr/share/$PRGNAM
+
+chown -R :$CADDYGROUP $PKG/etc/$PRGNAM
+find $PKG/usr/doc -type f -exec chmod 644 {} \;
+
+mkdir -p $PKG/etc/rc.d
+cat $CWD/rc.$PRGNAM > $PKG/etc/rc.d/rc.$PRGNAM.new
 
 mkdir -p $PKG/install
 cat $CWD/slack-desc > $PKG/install/slack-desc
+cat $CWD/doinst.sh > $PKG/install/doinst.sh
 
 cd $PKG
 /sbin/makepkg -l y -c n $OUTPUT/$PRGNAM-$VERSION-$ARCH-$BUILD$TAG.$PKGTYPE
